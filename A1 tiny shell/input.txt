@@ -1,0 +1,2 @@
+ls -lrt
+pwd
