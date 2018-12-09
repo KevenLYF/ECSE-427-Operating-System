@@ -1,0 +1,107 @@
+ECSE 427 Assignment 1 Report
+
+1. tshell with system()
+The tiny shell works well with system() call, and it does not crash when a command crashes.
+It always returns relative error, and I'm able to exit by typing "exit".
+
+By using "strace", the system calls that are used in implementing system() are:
+execve()
+brk()
+access()
+open()
+fstat()
+mmap()
+close()
+mprotect()
+munmap()
+read()
+rt_sigaction()
+rt_sigprocmask()
+clone()
+wait()
+exit_group()
+
+2. tshell with fork() & vfork()
+Generally the vfork version behaves very similiar to system(). However I noticed some little differences.
+system() is calling "sh" to execute the linux command, which means if there is a non-exist command, it shows
+> oo
+> sh: 1: oo: not found
+In my fork(), I used execvp which looks for the binaries in /bin/, therefore, if I enter some non-exist command, it
+won't give me such error. Since this error handling is not required, I'll just mark this. And next time, I probably will call "sh".
+
+3. tshell with Clone()
+I used flag CLONE_VFORK | CLONE_VM | CLONE_FS | SIGCHLD
+
+CLONE_VFORK : This is to ensure that parent is suspended until child calls exec() or returns.
+
+CLONE_VM : This flag allows parent and child sharing virtual memory, which ensures any modifications we do in the child process would also affect parent process.
+
+CLONE_FS : This flags makes parent and child process sharing the same filesystem information. Any cd command in child process would also affect parent process.
+
+4. FIFO
+Please run the code to test (see README)
+
+
+
+
+
+--------------------------------------------------------------------------------------------
+
+-----------------------------     Timing Report  -------------------------------------------
+
+--------------------------------------------------------------------------------------------
+
+After performing several comparison between fork, vfork and clone, I noticed that fork is the slowest.
+vfork and clone have similiar performane. 
+However, since the running time differences are in very small scale,
+it oscillates a lot, which means it may not reflect the real performance of these three implementations.
+But a rigid pattern is that fork is always slower than vfork and clone.
+
+
+
+Command used in input.txt:
+ls -lrt
+pwd
+
+-------------------- Command Execution time with fork  ------------------
+total 44
+-rw-r--r-- 1 yliu202 nogroup  1256 Sep 20 20:36 report.txt
+drwxr-xr-x 2 yliu202 nogroup     2 Sep 22 20:29 test_folder
+drwxr-xr-x 2 yliu202 nogroup     5 Sep 26 11:18 __MACOSX
+prw-rw-rw- 1 yliu202 nogroup     0 Sep 26 11:25 myfifo
+-rw-r--r-- 1 yliu202 nogroup   282 Sep 26 11:35 makefile
+-rw-r--r-- 1 yliu202 nogroup 10974 Sep 26 11:46 tiny_shell.c
+-rwxr-xr-x 1 yliu202 nogroup 14224 Sep 26 13:41 tshell
+-rw-r--r-- 1 yliu202 nogroup    11 Sep 26 13:41 input.txt
+This command took about 0.00295 seconds
+/home/2018/yliu202/Desktop/ECSE 427
+This command took about 0.00041 seconds
+
+
+-------------------- Command Execution time with vFork  ------------------
+total 44
+-rw-r--r-- 1 yliu202 nogroup  1256 Sep 20 20:36 report.txt
+drwxr-xr-x 2 yliu202 nogroup     2 Sep 22 20:29 test_folder
+drwxr-xr-x 2 yliu202 nogroup     5 Sep 26 11:18 __MACOSX
+prw-rw-rw- 1 yliu202 nogroup     0 Sep 26 11:25 myfifo
+-rw-r--r-- 1 yliu202 nogroup   282 Sep 26 11:35 makefile
+-rw-r--r-- 1 yliu202 nogroup 10974 Sep 26 11:46 tiny_shell.c
+-rw-r--r-- 1 yliu202 nogroup    11 Sep 26 13:41 input.txt
+-rwxr-xr-x 1 yliu202 nogroup 14224 Sep 26 13:43 tshell
+This command took about 0.00214 seconds
+/home/2018/yliu202/Desktop/ECSE 427
+This command took about 0.00027 seconds
+
+
+-------------------- Command Execution time with clone  ------------------
+total 44
+-rw-r--r-- 1 yliu202 nogroup  1256 Sep 20 20:36 report.txt
+drwxr-xr-x 2 yliu202 nogroup     2 Sep 22 20:29 test
+prw-rw-rw- 1 yliu202 nogroup     0 Sep 26 11:25 myfifo
+-rw-r--r-- 1 yliu202 nogroup   282 Sep 26 11:35 makefile
+-rw-r--r-- 1 yliu202 nogroup 11061 Sep 26 14:51 tiny_shell.c
+-rwxr-xr-x 1 yliu202 nogroup 18376 Sep 26 15:20 tshell
+-rw-r--r-- 1 yliu202 nogroup    11 Sep 26 15:21 input.txt
+This command took about 0.00205 seconds
+/home/2018/yliu202/Desktop/ECSE 427/A1
+This command took about 0.00034 seconds
